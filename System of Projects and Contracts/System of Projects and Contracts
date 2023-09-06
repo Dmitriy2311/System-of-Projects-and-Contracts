@@ -1,0 +1,184 @@
+import datetime
+
+class Contract:
+    def __init__(self, name):
+        self.name = name
+        self.creation_date = datetime.date.today()
+        self.sign_date = None
+        self.status = "Черновик"
+        self.project = None
+
+    def confirm_contract(self):
+        if self.status == "Черновик":
+            self.status = "Активен"
+            self.sign_date = datetime.date.today()
+            return True
+        else:
+            print("Договор уже подтвержден или завершен.")
+            return False
+
+    def complete_contract(self):
+        if self.status == "Активен":
+            self.status = "Завершен"
+            return True
+        else:
+            print("Договор не может быть завершен.")
+            return False
+
+class Project:
+    def __init__(self, name):
+        self.name = name
+        self.creation_date = datetime.date.today()
+        self.contracts = []
+
+    def add_contract(self, contract):
+        if contract.status == "Активен" and contract not in self.contracts:
+            if not self.has_active_contract():
+                self.contracts.append(contract)
+                contract.project = self
+                return True
+            else:
+                print("В проекте уже есть активный договор.")
+        else:
+            print("Договор не может быть добавлен в проект.")
+
+    def has_active_contract(self):
+        for contract in self.contracts:
+            if contract.status == "Активен":
+                return True
+        return False
+
+def main():
+    contracts = []
+    projects = []
+
+    while True:
+        print("1. Проект")
+        print("2. Договор")
+        print("3. Завершить работу с программой")
+
+        choice = input("Выберите действие: ")
+
+        if choice == "1":
+            print("1. Создать проект")
+            print("2. Добавить договор в проект")
+            print("3. Завершить договор в проекте")
+
+            project_choice = input("Выберите действие для проекта: ")
+
+            if project_choice == "1":
+                project_name = input("Введите название проекта: ")
+                project = Project(project_name)
+                projects.append(project)
+                print(f"Проект '{project_name}' создан.")
+            elif project_choice == "2":
+                if not contracts:
+                    print("Сначала создайте хотя бы один договор.")
+                    continue
+
+                print("Список активных договоров:")
+                for i, contract in enumerate(contracts):
+                    if contract.status == "Активен":
+                        print(f"{i + 1}. {contract.name}")
+
+                contract_idx = int(input("Выберите номер договора для добавления в проект: ")) - 1
+
+                if 0 <= contract_idx < len(contracts):
+                    project_idx = int(input("Выберите номер проекта, в который добавить договор: ")) - 1
+
+                    if 0 <= project_idx < len(projects):
+                        project = projects[project_idx]
+                        contract = contracts[contract_idx]
+
+                        if project.add_contract(contract):
+                            print(f"Договор '{contract.name}' добавлен в проект '{project.name}'.")
+                        else:
+                            print("Договор не может быть добавлен в проект.")
+                    else:
+                        print("Недопустимый номер проекта.")
+                else:
+                    print("Недопустимый номер договора.")
+            elif project_choice == "3":
+                print("Список проектов:")
+                for i, project in enumerate(projects):
+                    print(f"{i + 1}. {project.name}")
+
+                project_idx = int(input("Выберите номер проекта: ")) - 1
+
+                if 0 <= project_idx < len(projects):
+                    project = projects[project_idx]
+                    active_contracts = [contract for contract in project.contracts if contract.status == "Активен"]
+
+                    if active_contracts:
+                        print("Список активных договоров в проекте:")
+                        for i, contract in enumerate(active_contracts):
+                            print(f"{i + 1}. {contract.name}")
+
+                        contract_idx = int(input("Выберите номер договора для завершения: ")) - 1
+
+                        if 0 <= contract_idx < len(active_contracts):
+                            contract = active_contracts[contract_idx]
+                            if contract.complete_contract():
+                                print(f"Договор '{contract.name}' завершен.")
+                            else:
+                                print("Договор не может быть завершен.")
+                        else:
+                            print("Недопустимый номер договора.")
+                    else:
+                        print("В проекте нет активных договоров.")
+                else:
+                    print("Недопустимый номер проекта.")
+            else:
+                print("Недопустимый выбор.")
+        elif choice == "2":
+            print("1. Создать договор")
+            print("2. Подтвердить договор")
+            print("3. Завершить договор")
+
+            contract_choice = input("Выберите действие для договора: ")
+
+            if contract_choice == "1":
+                contract_name = input("Введите название договора: ")
+                contract = Contract(contract_name)
+                contracts.append(contract)
+                print(f"Договор '{contract_name}' создан.")
+            elif contract_choice == "2":
+                print("Список договоров:")
+                for i, contract in enumerate(contracts):
+                    print(f"{i + 1}. {contract.name}")
+
+                contract_idx = int(input("Выберите номер договора для подтверждения: ")) - 1
+
+                if 0 <= contract_idx < len(contracts):
+                    contract = contracts[contract_idx]
+                    if contract.confirm_contract():
+                        print(f"Договор '{contract.name}' подтвержден.")
+                    else:
+                        print("Договор не может быть подтвержден.")
+                else:
+                    print("Недопустимый номер договора.")
+            elif contract_choice == "3":
+                print("Список договоров:")
+                for i, contract in enumerate(contracts):
+                    print(f"{i + 1}. {contract.name}")
+
+                contract_idx = int(input("Выберите номер договора для завершения: ")) - 1
+
+                if 0 <= contract_idx < len(contracts):
+                    contract = contracts[contract_idx]
+                    if contract.complete_contract():
+                        print(f"Договор '{contract.name}' завершен.")
+                    else:
+                        print("Договор не может быть завершен.")
+                else:
+                    print("Недопустимый номер договора.")
+            else:
+                print("Недопустимый выбор.")
+        elif choice == "3":
+            print("Завершение работы с программой.")
+            break
+        else:
+            print("Недопустимый выбор.")
+
+if __name__ == "__main__":
+    main()
